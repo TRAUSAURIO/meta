@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { text-align:center; font-family:Arial; }
+button { width:200px; height:80px; font-size:25px; margin:10px; }
+</style>
+</head>
+<body>
+
+<h1>CONTROL ROBOT VR</h1>
+
+<button onclick="connect()">Conectar</button><br><br>
+
+<button onclick="send('F')">Adelante</button><br>
+<button onclick="send('B')">Atras</button><br>
+<button onclick="send('L')">Izquierda</button>
+<button onclick="send('R')">Derecha</button><br>
+<button onclick="send('S')" style="background:red;">STOP</button>
+
+<script>
+let characteristic;
+
+async function connect() {
+  const device = await navigator.bluetooth.requestDevice({
+    filters: [{ name: 'ESP32_ROBOT' }],
+    optionalServices: ['1234']
+  });
+
+  const server = await device.gatt.connect();
+  const service = await server.getPrimaryService('1234');
+  characteristic = await service.getCharacteristic('5678');
+
+  alert("Conectado al robot!");
+}
+
+function send(cmd) {
+  if (!characteristic) {
+    alert("No conectado");
+    return;
+  }
+  const encoder = new TextEncoder();
+  characteristic.writeValue(encoder.encode(cmd));
+}
+</script>
+
+</body>
+</html>
